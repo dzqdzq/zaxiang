@@ -138,6 +138,16 @@ class AsyncOSSUploader:
     def _upload_single_file_sync(self, file_path: Path, dst_path: str) -> bool:
         """同步上传单个文件"""
         try:
+            # 检查是否为 .DS_Store 文件
+            if file_path.name == '.DS_Store':
+                print(f"🚫 已排除 .DS_Store 文件: {file_path}")
+                return False
+            
+            # 检查是否是以 . 开头的文件
+            if file_path.name.startswith('.'):
+                print(f"⚠️  警告: 正在上传以 . 开头的文件: {file_path}")
+                print("   这个文件通常是隐藏文件，请确认是否需要上传")
+            
             if dst_path is None:
                 dst_path = ""
             
@@ -166,9 +176,20 @@ class AsyncOSSUploader:
         
         # 收集所有需要上传的文件
         upload_tasks = []
+        excluded_files = []
+        warning_files = []
         
         for file_path in dir_path.rglob('*'):
             if file_path.is_file():
+                # 排除 .DS_Store 文件
+                if file_path.name == '.DS_Store':
+                    excluded_files.append(file_path)
+                    continue
+                
+                # 检查是否是以 . 开头的文件
+                if file_path.name.startswith('.'):
+                    warning_files.append(file_path)
+                
                 if include_root:
                     relative_path = str(file_path)
                 else:
@@ -179,6 +200,17 @@ class AsyncOSSUploader:
                 oss_key = oss_key.lstrip('/')
                 
                 upload_tasks.append((file_path, oss_key))
+        
+        # 显示排除的文件
+        if excluded_files:
+            print(f"🚫 已排除 {len(excluded_files)} 个 .DS_Store 文件")
+        
+        # 显示警告信息
+        if warning_files:
+            print(f"⚠️  发现 {len(warning_files)} 个以 . 开头的文件:")
+            for file_path in warning_files:
+                print(f"   ⚠️  {file_path}")
+            print("   这些文件通常是隐藏文件，请确认是否需要上传")
         
         total_files = len(upload_tasks)
         print(f"📊 发现 {total_files} 个文件需要上传")
