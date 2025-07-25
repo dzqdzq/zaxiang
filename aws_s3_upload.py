@@ -24,7 +24,7 @@ class AsyncS3Uploader:
         """
         session = boto3.Session(
             access_key_id=os.getenv(env_access_key_id),
-            access_key_secret=os.getenv(env_access_key_secret)
+            access_key_secret=os.getenv(env_access_key_secret),
             region_name=region
         )
         self.s3 = session.client('s3')
@@ -276,19 +276,6 @@ def upload(src_path: str, dst_path: str, include_root: bool = False, workers: in
     """
     uploader = AsyncS3Uploader(workers=workers)
     return uploader.upload(src_path, dst_path, include_root)
-
-
-# 保持向后兼容的简单上传函数
-def upload_simple(local_directory, s3_file_path):
-    """简单的单文件上传函数（保持向后兼容）"""
-    session = boto3.Session(
-       aws_access_key_id=os.getenv(env_access_key_id),
-       aws_secret_access_key=os.getenv(env_access_key_secret),
-       region_name=region
-    )
-    s3 = session.client('s3')
-    print('上传S3参数:', local_directory, bucket_name, s3_file_path)
-    s3.upload_file(local_directory, bucket_name, s3_file_path)
 
 
 def parse_arguments():
