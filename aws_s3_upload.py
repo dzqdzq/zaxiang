@@ -23,8 +23,8 @@ class AsyncS3Uploader:
             workers: 最大并发工作线程数
         """
         session = boto3.Session(
-            access_key_id=os.getenv(env_access_key_id),
-            access_key_secret=os.getenv(env_access_key_secret),
+            aws_access_key_id=os.getenv(env_access_key_id),
+            aws_secret_access_key=os.getenv(env_access_key_secret),
             region_name=region
         )
         self.s3 = session.client('s3')
